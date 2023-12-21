@@ -2,12 +2,21 @@
 , writeShellScriptBin
 , textgenDir ? "$(pwd)/repos/textgen"
 , userDir ? "$(pwd)/user/textgen"
-, pipReqFile ? "requirements_amd_noavx2.txt"
-, torchInstallationStr ? "torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6"
+, pipReqFile ? ""
+, torchInstallationStr ? ""
 , useNixLlamaCpp ? true
 }:
 writeShellScriptBin "update-textgen" ''
 	set -euo pipefail
+
+	${lib.optionalString (pipReqFile == "") ''
+		echo "You must specify pip requirements file"
+		exit 1
+	''}
+	${lib.optionalString (torchInstallationStr == "") ''
+		echo "You must specify torch installation string"
+		exit 1
+	''}
 
 	declare -a userDirs=(
 		"characters" "extensions" "loras" "models" "presets"
@@ -53,10 +62,12 @@ writeShellScriptBin "update-textgen" ''
 	git -C ${textgenDir} fetch
 	git -C ${textgenDir} reset --hard origin/main
 	link_dirs;
+
 	git restore "${textgenDir}/${pipReqFile}"
 	${lib.optionalString useNixLlamaCpp ''
 		sed -i '/llama-cpp-python/d' "${textgenDir}/${pipReqFile}"
 	''}
 	pip install -U ${torchInstallationStr}
 	pip install -U -r "${textgenDir}/${pipReqFile}"
+	pip install -U -r "${textgenDir}/extensions/openai/requirements.txt"
 ''

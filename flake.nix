@@ -16,6 +16,13 @@
             llama-cpp = prev.callPackage ./pkgs/llama-cpp { };
           in {
             start-tavern = prev.callPackage ./pkgs/scripts/start-tavern.nix { };
+            update-tavern = prev.callPackage ./pkgs/scripts/update-tavern.nix { };
+            start-extras = prev.callPackage ./pkgs/scripts/start-extras.nix {
+              extrasModules = [ "chromadb" ];
+            };
+            update-extras = prev.callPackage ./pkgs/scripts/update-extras.nix {
+              pipReqFiles = [ "requirements-rocm.txt" ];
+            };
             start-textgen = prev.callPackage ./pkgs/scripts/start-textgen.nix {
               textgenFlags = [
                 "--nowebui"
@@ -24,10 +31,12 @@
                 "--model Noromaid-13B-v0.2-GPTQ"
               ];
             };
-            update-tavern = prev.callPackage ./pkgs/scripts/update-tavern.nix { };
             update-textgen = prev.callPackage ./pkgs/scripts/update-textgen.nix {
               inherit useNixLlamaCpp;
+              pipReqFile = "requirements_amd_noavx2.txt";
+              torchInstallationStr = "torch torchvision torchaudio --index-url https://download.pytorch.org/whl/rocm5.6";
             };
+
             python311 = prev.python311.override {
               # enableOptimizations = true;
               # reproducibleBuild = false;
@@ -64,11 +73,15 @@
         packages = {
           start-tavern = pkgs.start-tavern;
           start-textgen = pkgs.start-textgen;
+          start-extras = pkgs.start-extras;
           update-tavern = pkgs.update-tavern;
           update-textgen = pkgs.update-textgen;
+          update-extras = pkgs.update-extras;
         };
         devShells.default = let
-          python = (pkgs.python311.withPackages(ps: with ps; [ pip build virtualenv ]));
+          python = (pkgs.python311.withPackages(ps: with ps; [
+            pip build virtualenv hnswlib wxPython_4_2
+          ]));
         in pkgs.mkShell {
           name = "text-generation-webui";
           packages = [

@@ -1,0 +1,5 @@
+/repos/**
+/user/**
+/.venv
+!.envrc
+!.gitkeep

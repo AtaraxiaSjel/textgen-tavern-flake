@@ -6,6 +6,8 @@
 , extrasFlags ? []
 }:
 writeShellScriptBin "start-extras" ''
+  set -euo pipefail
+
   ${lib.optionalString (extrasModules == []) ''
 		echo "You must specify at least one extras module"
 		exit 1

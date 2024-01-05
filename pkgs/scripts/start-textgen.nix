@@ -5,6 +5,8 @@
 , textgenFlags ? []
 }:
 writeShellScriptBin "start-textgen" ''
+  set -euo pipefail
+
   if [ ! -d "${textgenDir}/.git" ]; then
     ${update-textgen}/bin/update-textgen
   fi

@@ -1,6 +1,7 @@
 /repos/**
 /user/**
-/.venv
+.venv
+venv
 /result*
 !.envrc
 !.gitkeep

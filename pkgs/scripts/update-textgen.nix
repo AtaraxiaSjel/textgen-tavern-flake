@@ -3,7 +3,7 @@
 , textgenDir ? "$(pwd)/repos/textgen"
 , userDir ? "$(pwd)/user/textgen"
 , pipReqFile ? ""
-, torchInstallationStr ? ""
+, torchCommand ? ""
 , useNixLlamaCpp ? true
 }:
 writeShellScriptBin "update-textgen" ''
@@ -13,8 +13,8 @@ writeShellScriptBin "update-textgen" ''
 		echo "You must specify pip requirements file"
 		exit 1
 	''}
-	${lib.optionalString (torchInstallationStr == "") ''
-		echo "You must specify torch installation string"
+	${lib.optionalString (torchCommand == "") ''
+		echo "You must specify torch installation command"
 		exit 1
 	''}
 
@@ -63,11 +63,10 @@ writeShellScriptBin "update-textgen" ''
 	git -C ${textgenDir} reset --hard origin/main
 	link_dirs;
 
-	git restore "${textgenDir}/${pipReqFile}"
 	${lib.optionalString useNixLlamaCpp ''
 		sed -i '/llama-cpp-python/d' "${textgenDir}/${pipReqFile}"
 	''}
-	pip install -U ${torchInstallationStr}
+	${torchCommand}
 	pip install -U -r "${textgenDir}/${pipReqFile}"
 	pip install -U -r "${textgenDir}/extensions/openai/requirements.txt"
 ''

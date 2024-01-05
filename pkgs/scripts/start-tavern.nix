@@ -4,6 +4,8 @@
 , tavernDir ? "$(pwd)/repos/sillytavern"
 }:
 writeShellScriptBin "start-tavern" ''
+  set -euo pipefail
+
   if [ ! -d "${tavernDir}/.git" ]; then
     ${update-tavern}/bin/update-tavern
   fi
